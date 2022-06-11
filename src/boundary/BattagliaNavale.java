@@ -90,15 +90,17 @@ public class BattagliaNavale {
 	}
 
 	/*
-	 * RISULTATO -Nome Giocatore -> stampo il vincitore -Mossa non valida -> errore
-	 * e tocca di nuovo a quel giocatore -Tentativi esauriti -> errore e passa il
-	 * turno -Termine turno -> passa il turno al prossimo giocatore
+	 * RISULTATO 
+	 * -Nome Giocatore -> stampo il vincitore 
+	 * -Mossa non valida -> errore e tocca di nuovo a quel giocatore 
+	 * -Tentativi esauriti -> errore e passa il turno 
+	 * -Termine turno -> passa il turno al prossimo giocatore
 	 */
 	public void gestisciPartita() {
 		JTextField numRiga = new JTextField();
 		JTextField numColonna = new JTextField();
 		Object[] message = { "Numero riga:", numRiga, "Numero colonna:", numColonna, };
-		int j = 0;
+		int j = 0, numTurniTerminati = 0;
 		String risultato = "";
 		String nomeGiocatore = "";
 		loopPartita: while (true) {
@@ -132,8 +134,7 @@ public class BattagliaNavale {
 								InizializzaPartita.gestore.restituisciNomeGiocatori().get(i) + ": " + risultato);
 						// Se tutti i giocatori terminano i tentativi disponibili,
 						// la partita termina senza un vincitore.
-						int numTurniTerminati = 0;
-						if (numTurniTerminati == InizializzaPartita.gestore.restituisciNomeGiocatori().size()) {
+						if (numTurniTerminati == InizializzaPartita.gestore.getPartitaCorrente().getNumTentativiMax()-1) {
 							JOptionPane.showMessageDialog(null, "La partita si e' conclusa senza un vincitore!");
 							break loopPartita;
 						} else {
@@ -225,10 +226,6 @@ public class BattagliaNavale {
 		btnNewButton.setFont(new Font("Tahoma", Font.BOLD, 10));
 		btnNewButton.setForeground(Color.BLUE);
 		btnNewButton.setBackground(Color.WHITE);
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
 		btnNewButton.setBounds(20, 189, 158, 21);
 		PanelMenu.add(btnNewButton);
 
@@ -245,14 +242,16 @@ public class BattagliaNavale {
 		btnNewButton_2.setBackground(Color.WHITE);
 		btnNewButton_2.setBounds(20, 251, 158, 21);
 		PanelMenu.add(btnNewButton_2);
+		tabellaGiocatori.setForeground(new Color(0, 0, 0));
+		tabellaGiocatori.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		
 		tabellaGiocatori.setBounds(20, 58, 158, 48);
 		PanelMenu.add(tabellaGiocatori);
 		tabellaGiocatori.setModel(new DefaultTableModel(
 				new Object[][] {
-					{"", null},
-					{null, null},
-					{null, null},
+					{"", },
+					{"", },
+					{"", },
 				},
 				new String[] {
 					"Giocatori in Gara", "Colore Segnaposto"
@@ -268,6 +267,7 @@ public class BattagliaNavale {
 		tabellaGiocatori.getColumnModel().getColumn(0).setPreferredWidth(113);
 		tabellaGiocatori.getColumnModel().getColumn(1).setPreferredWidth(97);
 		tabellaGiocatori.setBorder(new LineBorder(new Color(0, 0, 0)));
+		tabellaGiocatori.setShowGrid(false);
 		tabellaGiocatori.setBounds(26, 66, 152, 48);
 		
 

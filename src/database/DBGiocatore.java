@@ -2,10 +2,8 @@ package database;
 
 public class DBGiocatore {
 	private final String nome;
-	private int idPartita;
-
+	
 	public DBGiocatore(String nome) {
-		super();
 		this.nome = nome;
 
 	}
@@ -20,13 +18,4 @@ public class DBGiocatore {
 			return 0;
 		}
 	}
-
-	public String getNome() {
-		return nome;
-	}
-
-	public int getIdPartita() {
-		return idPartita;
-	}
-
 }

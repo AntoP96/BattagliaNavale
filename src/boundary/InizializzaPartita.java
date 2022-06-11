@@ -5,6 +5,7 @@ import java.awt.ComponentOrientation;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ import javax.swing.event.DocumentListener;
 
 import control.GestorePartite;
 import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class InizializzaPartita implements DocumentListener {
 
@@ -37,7 +40,7 @@ public class InizializzaPartita implements DocumentListener {
 	private JTextField txtColonnaBersaglio;
 	private JButton confermaInserimento;
 	private ArrayList<JTextField> textFields = new ArrayList<>();
-	private ArrayList<JPanel> listaButton=new ArrayList<>();
+	private ArrayList<JPanel> listaButton;
 	static JPanel panelInizializza;
 	private ImageIcon scoppio;
 	private JLabel labelScoppio;
@@ -69,6 +72,101 @@ public class InizializzaPartita implements DocumentListener {
 		initialize();
 	}
 	
+	public void startPartita () {
+		listaButton = new ArrayList<>();
+		int righe = 0, colonne = 0;
+		ArrayList<String> listaGiocatori = new ArrayList<>();
+		String giocatore1;
+		String giocatore2 = "";
+		String giocatore3 = "";
+		int numTentativiMax;
+		int rigaBersaglio;
+		int colonnaBersaglio;
+
+		giocatore1 = txtGiocatore1.getText();
+		int i = checkInputFields();
+		/*SWITCH CASE PER ERRORI:
+		 * 0: input validi, creazione partita
+		 * 1: Errore sul nome dei giocatori: Non è possibile inserire due giocatori con lo stesso nome!
+		 * 2: Errore sulle dimensioni della griglia: La griglia deve essere quadrata!
+		 * 3: Errore sulla posizione del bersaglio: Il bersaglio deve essere contenuto nella griglia
+		 * 4: Errore sul numero dei tentativi massimo inserito: Il numero deve essere un multiplo del numero di giocatori
+		 * 5: Errore sul formato degli input inseriti dall'Amministratore.
+		*/
+		switch (i) {
+		case 0:
+			if (!txtGiocatore2.getText().isEmpty()) {
+				giocatore2 = txtGiocatore2.getText();
+				listaGiocatori.add(giocatore2);
+			}
+			if (!txtGiocatore3.getText().isEmpty()) {
+				giocatore3 = txtGiocatore3.getText();
+				listaGiocatori.add(giocatore3);
+			}
+			listaGiocatori.add(giocatore1);
+
+			numTentativiMax = Integer.parseInt(txtNumTentativiMax.getText());
+			rigaBersaglio = Integer.parseInt(txtRigaBersaglio.getText());
+			colonnaBersaglio = Integer.parseInt(txtColonnaBersaglio.getText());
+
+			righe = Integer.parseInt(txtNumRighe.getText());
+			colonne = Integer.parseInt(txtNumColonne.getText());
+			BattagliaNavale b = new BattagliaNavale();
+			JPanel[][] grid;
+			grid = new JPanel[righe][colonne];
+			b.panelGriglia.setLayout(new GridLayout(righe, colonne));
+			for (int y = 0; y < righe; y++) {
+				for (int x = 0; x < colonne; x++) {
+					grid[x][y] = new JPanel();
+					grid[x][y].setEnabled(false);
+					grid[x][y].setLayout(new GridBagLayout());
+					grid[x][y].setBackground(Color.white);
+					grid[x][y].setBorder(new LineBorder(Color.black));
+					b.panelGriglia.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+					b.panelGriglia.add(grid[x][y]);
+					listaButton.add(grid[x][y]);
+					
+				}
+			}
+			
+			b.frmBattagliaNavale.setVisible(true);
+			frmInizializzaPartita.setVisible(false);
+			clearTextFields();
+			txtGiocatore2.setText("");
+			txtGiocatore3.setText("");
+			gestore.inizializzaPartita(listaGiocatori, numTentativiMax, righe, colonne, rigaBersaglio-1,
+					colonnaBersaglio-1);
+			b.aggiornaListaGiocatori(gestore.restituisciNomeGiocatori());
+			b.gestisciPartita();
+			break;
+		case 1: 
+			JOptionPane.showMessageDialog(null, "Il nome dei giocatori deve essere univoco!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
+			clearTextFields();
+			JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
+			break;
+		case 2:
+			JOptionPane.showMessageDialog(null, "La griglia deve essere quadrata!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
+			clearTextFields();
+			JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
+			break;
+		case 3:
+			JOptionPane.showMessageDialog(null, "Il bersaglio deve essere posizionato all'interno della griglia!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
+			clearTextFields();
+			JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
+			break;
+		case 4:
+			JOptionPane.showMessageDialog(null, "Il numero di tentativi massimo deve essere un multiplo del numero di giocatori!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
+			clearTextFields();
+			JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
+			break;
+		case 5:
+			JOptionPane.showMessageDialog(null, "Errore nel formato dei dati!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
+			clearTextFields();
+			JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
+			break;
+		}
+	}
+	
 	public void aggiungiScoppio(int numRiga, int numColonna) {
 		listaButton.get(numRiga*((int)Math.sqrt(listaButton.size()))+(numColonna-1)).add(labelScoppio);
 	}
@@ -94,7 +192,6 @@ public class InizializzaPartita implements DocumentListener {
 			if (textField.getText().trim().length() == 0)
 				return false;
 		}
-
 		return true;
 	}
 
@@ -116,21 +213,14 @@ public class InizializzaPartita implements DocumentListener {
 		confermaInserimento.setEnabled(isDataEntered());
 	}
 	public void coloraBottoni(int numRiga, int numColonna, Color color) {
-
 		listaButton.get(numRiga * ((int) Math.sqrt(listaButton.size())) + (numColonna - 1)).setBackground(color);
-
 	}
 	
 	public int checkInputFields() {
-		int righe = 0, colonne = 0;
-
-		String giocatore1 = txtGiocatore1.getText();
-		String giocatore2="";
-		String giocatore3="";
-		int numGiocatori = 1;
-		int numTentativiMax;
-		int rigaBersaglio;
-		int colonnaBersaglio;
+		
+		int righe = 0, colonne = 0, numGiocatori = 1, numTentativiMax, rigaBersaglio, colonnaBersaglio;
+		String giocatore1 = txtGiocatore1.getText(), giocatore2 = "", giocatore3 = "";
+		
 		if (txtNumTentativiMax.getText().matches("^\\d+$") && txtRigaBersaglio.getText().matches("^\\d+$")
 				&& txtColonnaBersaglio.getText().matches("^\\d+$") && txtNumRighe.getText().matches("^\\d{1}$")
 				&& txtNumColonne.getText().matches("^\\d{1}$")) {
@@ -154,21 +244,22 @@ public class InizializzaPartita implements DocumentListener {
 		if (!(giocatore2.isEmpty() || giocatore3.isEmpty()) && (giocatore1.equals(giocatore2) || giocatore1.equals(giocatore3) || giocatore2.equals(giocatore3))) {
 			return 1;
 		}
-
 		if (righe != colonne)
 			return 2;
-
+		
 		if (rigaBersaglio > righe || colonnaBersaglio > colonne)
 			return 3;
-
+		
 		if (!(numTentativiMax % numGiocatori == 0))
 			return 4;
+		
 		return 0;
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
+	
 	private void initialize() {
 		frmInizializzaPartita = new JFrame();
 		frmInizializzaPartita.setResizable(false);
@@ -239,108 +330,17 @@ public class InizializzaPartita implements DocumentListener {
 		txtColonnaBersaglio.getDocument().addDocumentListener(this);
 
 		confermaInserimento = new JButton("Conferma");
+		confermaInserimento.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				startPartita();
+			}
+		});
 		confermaInserimento.setEnabled(false);
 		confermaInserimento.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				int righe = 0, colonne = 0;
-				ArrayList<String> listaGiocatori = new ArrayList<>();
-				String giocatore1;
-				String giocatore2 = "";
-				String giocatore3 = "";
-				int numTentativiMax;
-				int rigaBersaglio;
-				int colonnaBersaglio;
-
-				giocatore1 = txtGiocatore1.getText();
-				int i = checkInputFields();
-				/*SWITCH CASE PER ERRORI:
-				 * 0: input validi, creazione partita
-				 * 1: Errore sul nome dei giocatori: Non è possibile inserire due giocatori con lo stesso nome!
-				 * 2: Errore sulle dimensioni della griglia: La griglia deve essere quadrata!
-				 * 3: Errore sulla posizione del bersaglio: Il bersaglio deve essere contenuto nella griglia
-				 * 4: Errore sul numero dei tentativi massimo inserito: Il numero deve essere un multiplo del numero di giocatori
-				 * 5: Errore sul formato degli input inseriti dall'Amministratore.
-				*/
-				switch (i) {
-				case 0:
-					if (!txtGiocatore2.getText().isEmpty()) {
-						giocatore2 = txtGiocatore2.getText();
-						listaGiocatori.add(giocatore2);
-					}
-					if (!txtGiocatore3.getText().isEmpty()) {
-						giocatore3 = txtGiocatore3.getText();
-						listaGiocatori.add(giocatore3);
-					}
-					listaGiocatori.add(giocatore1);
-
-					numTentativiMax = Integer.parseInt(txtNumTentativiMax.getText());
-					rigaBersaglio = Integer.parseInt(txtRigaBersaglio.getText());
-					colonnaBersaglio = Integer.parseInt(txtColonnaBersaglio.getText());
-
-					righe = Integer.parseInt(txtNumRighe.getText());
-					colonne = Integer.parseInt(txtNumColonne.getText());
-					BattagliaNavale b = new BattagliaNavale();
-					JPanel[][] grid;
-					grid = new JPanel[righe][colonne];
-					b.panelGriglia.setLayout(new GridLayout(righe, colonne));
-					for (int y = 0; y < righe; y++) {
-						for (int x = 0; x < colonne; x++) {
-							grid[x][y] = new JPanel();
-							grid[x][y].setEnabled(false);
-							grid[x][y].setBackground(Color.white);
-							grid[x][y].setBorder(new LineBorder(Color.black));
-							b.panelGriglia.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-							b.panelGriglia.add(grid[x][y]);
-							listaButton.add(grid[x][y]);
-							
-						}
-					}
-					
-					b.frmBattagliaNavale.setVisible(true);
-					
-					
-					frmInizializzaPartita.setVisible(false);
-					clearTextFields();
-					txtGiocatore2.setText("");
-					txtGiocatore3.setText("");
-					gestore.inizializzaPartita(listaGiocatori, numTentativiMax, righe, colonne, rigaBersaglio-1,
-							colonnaBersaglio-1);
-					b.aggiornaListaGiocatori(gestore.restituisciNomeGiocatori());
-					b.gestisciPartita();
-					break;
-				case 1: 
-					JOptionPane.showMessageDialog(null, "Il nome dei giocatori deve essere univoco!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
-					clearTextFields();
-					JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
-					break;
-				case 2:
-					JOptionPane.showMessageDialog(null, "La griglia deve essere quadrata!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
-					clearTextFields();
-					JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
-					break;
-				
-				case 3:
-					JOptionPane.showMessageDialog(null, "Il bersaglio deve essere posizionato all'interno della griglia!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
-					clearTextFields();
-					JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
-					break;
-					
-				case 4:
-					JOptionPane.showMessageDialog(null, "Il numero di tentativi massimo deve essere un multiplo del numero di giocatori!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
-					clearTextFields();
-					JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
-					break;
-				
-				case 5:
-					JOptionPane.showMessageDialog(null, "Errore nel formato dei dati!!!", "ERRORE!!!", JOptionPane.ERROR_MESSAGE);
-					clearTextFields();
-					JOptionPane.showMessageDialog(null, "Inserisci di nuovo i dati");
-					break;
-				}
-
-			
-			}
-
+		public void actionPerformed(ActionEvent e) {
+				startPartita();
+		}
 		});
 		confermaInserimento.setBounds(291, 134, 135, 21);
 		panelInizializza.add(confermaInserimento);
