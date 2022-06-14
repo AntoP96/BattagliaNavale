@@ -1,3 +1,12 @@
+/**Questa classe rappresenta l'interfaccia grafica principale dell'applicazione e permette la creazione di una nuova partita o le interrogazioni
+ * ,da parte dei Giocatori o dell'Amministratore, previste nella traccia( non sono state implementate perchè non richieste).
+ * Questa classe dichiara i suoi attributi frmBattagliaNavale e panelGriglia come public in modo da permettere alla classe InizializzaPartita di
+ * creare a runtime, sul JPanel di questa classe , la griglia dove verrà svolta la partita. Inoltre questa classe si occupa di gestire la ciclicità
+ * dei turni durante la partita e richiama i diversi Giocatori attraverso dei confirmDialog per permettergli di inserire i dati relativi alla mossa
+ * da effettuare e sfruttando i metodi del package sottostante forniti dalla classe GestorePartite, fornisce diversi output in base ai valori di 
+ * ritorno ottenuti.
+ * 
+ */
 package boundary;
 
 import java.awt.EventQueue;
@@ -32,10 +41,25 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 public class BattagliaNavale {
-
-	public static JFrame frmBattagliaNavale;
-	static JPanel panelGriglia;
+	/**frmBattagliaNavale: JFrame che incapsula i JPanel da mostrare al giocatore
+	 * 
+	 */
+	public  JFrame frmBattagliaNavale;
+	/**panelGriglia: JPanel con GridLayout su cui, all'inizializzazione di una nuova partita, viene creata la griglia di JPanel che fungerà da griglia
+	 * per il gioco BattagliaNavale.
+	 * 
+	 */
+	public JPanel panelGriglia;
+	/**frameInizializza: riferimento alla classe InizalizzaPartita utilizzato per mostrare all'utente il form di InizializzaPartita quando egli
+	 * preme sul JButton inizializzaPartita.
+	 * 
+	 */
 	private static InizializzaPartita frameInizializza;
+	
+	/**tabellaGiocatori: JTable utilizzata per mostrare i dati relativi ai giocatori in gara: il loro nome e il colore del segnaposto.
+	 * Questa JTable viene mostrata sul JPanel panelMenu.
+	 * 
+	 */
 	private final JTable tabellaGiocatori = new JTable();
 	/**
 	 * Launch the application.
@@ -54,7 +78,14 @@ public class BattagliaNavale {
 			}
 		});
 	}
-
+	/**Classe utilizzata per aggiungere un TableCellRender custom alla JTable tabella giocatori.
+	 * In particolare questa classe si occupa di colorare la colonna accanto al nome dei giocatori per indicare il loro segnaposto.
+	 * Sfrutta il metodo della classe GestorePartite per ottenere il colore random assegnato in fase di creazione ad ogni giocatore in gara
+	 * e lo inserisce nella cella associata al giocatore di cui si è ottenuto il colore.
+	 * 
+	 * 
+	 *
+	 */
 	public class StatusColumnCellRenderer extends DefaultTableCellRenderer {
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
@@ -78,7 +109,12 @@ public class BattagliaNavale {
 	public BattagliaNavale() {
 		initialize();
 	}
-
+	/**Metodo che aggiorna la prima colonna della JTable inserendo i nomi dei giocatori in gara e inoltre setta il custom TableCellRenderer sulla 
+	 * seconda colonna della tabella. Tale metodo viene richiamato dalla classe InizializzaPartita quando l'Amministratore ha inserito correttamente
+	 * i dati.
+	 * 
+	 * @param listaGiocatori : lista dei giocatori in gara
+	 */
 	public void aggiornaListaGiocatori(ArrayList<String> listaGiocatori) {
 		int i = 0;
 		for (String giocatore : listaGiocatori) {
@@ -89,12 +125,16 @@ public class BattagliaNavale {
 		this.tabellaGiocatori.getColumnModel().getColumn(1).setCellRenderer(new StatusColumnCellRenderer());
 	}
 
-	/*
-	 * RISULTATO 
+	/**Metodo che si occupa della gestione di una partita e quindi crea due cicli, uno per partita e uno per turno, dentro i quali risiede la logica
+	 * per richiamare il giocatore ad effettuare una mossa: mostrando un confirmDialog con due JTextField e un JButton di conferma.
+	 * Successivamente si invoca il metodo di GestorePartite effettuaMossa(), il quale restituisce una stringa di controllo.
+	 *  Local variable: RISULTATO ha quattro possibili valori:
 	 * -Nome Giocatore -> stampo il vincitore 
 	 * -Mossa non valida -> errore e tocca di nuovo a quel giocatore 
-	 * -Tentativi esauriti -> errore e passa il turno 
+	 * -Tentativi esauriti -> errore e passa il turno (se finiscono tutti i tentativi -> la partita termina senza un vincitore.
 	 * -Termine turno -> passa il turno al prossimo giocatore
+	 * Inoltre questo metodo si occupa di colorare i JPanel e aggiungere delle icone per mostrare ai Giocatori la posizione del loro segnaposto
+	 * e l'esito della loro mossa.
 	 */
 	public void gestisciPartita() {
 		JTextField numRiga = new JTextField();
@@ -118,7 +158,7 @@ public class BattagliaNavale {
 							Integer.parseInt(numRiga.getText()) - 1, Integer.parseInt(numColonna.getText()) - 1);
 
 					if (risultato.equals(nomeGiocatore)) {
-						frameInizializza.coloraBottoni(Integer.parseInt(numRiga.getText()) - 1,
+						frameInizializza.coloraPanel(Integer.parseInt(numRiga.getText()) - 1,
 								Integer.parseInt(numColonna.getText()),
 								InizializzaPartita.gestore.getColorFromGiocatore(nomeGiocatore));
 						frameInizializza.aggiungiScoppio(Integer.parseInt(numRiga.getText()) - 1,
@@ -130,16 +170,14 @@ public class BattagliaNavale {
 
 						break loopPartita;
 					} else if (risultato.equals("Tentativi esauriti")) {
-						JOptionPane.showMessageDialog(null,
-								InizializzaPartita.gestore.restituisciNomeGiocatori().get(i) + ": " + risultato);
-						// Se tutti i giocatori terminano i tentativi disponibili,
-						// la partita termina senza un vincitore.
-						if (numTurniTerminati == InizializzaPartita.gestore.getPartitaCorrente().getNumTentativiMax()-1) {
+							JOptionPane.showMessageDialog(null,
+							InizializzaPartita.gestore.restituisciNomeGiocatori().get(i) + ": " + risultato);
+						
+							if (i== InizializzaPartita.gestore.restituisciNomeGiocatori().size()-1) {
 							JOptionPane.showMessageDialog(null, "La partita si e' conclusa senza un vincitore!");
 							break loopPartita;
-						} else {
-							numTurniTerminati++;
-						}
+							} 
+							
 					} else if (risultato.equals("Mossa non valida")) {
 						JOptionPane.showMessageDialog(null,
 								InizializzaPartita.gestore.restituisciNomeGiocatori().get(i) + ": " + risultato);
@@ -147,7 +185,7 @@ public class BattagliaNavale {
 						numRiga.setText("1");
 						numColonna.setText("1");
 					} else {
-						frameInizializza.coloraBottoni(Integer.parseInt(numRiga.getText()) - 1,
+						frameInizializza.coloraPanel(Integer.parseInt(numRiga.getText()) - 1,
 								Integer.parseInt(numColonna.getText()),
 								InizializzaPartita.gestore.getColorFromGiocatore(nomeGiocatore));
 						frameInizializza.aggiungiMancato(Integer.parseInt(numRiga.getText()) - 1,
@@ -163,7 +201,7 @@ public class BattagliaNavale {
 					numRiga.setText("1");
 					numColonna.setText("1");
 				}
-				frameInizializza.coloraBottoni(Integer.parseInt(numRiga.getText()) - 1,
+				frameInizializza.coloraPanel(Integer.parseInt(numRiga.getText()) - 1,
 						Integer.parseInt(numColonna.getText()), Color.white);
 				frameInizializza.rimuoviMancato(Integer.parseInt(numRiga.getText()) - 1,
 						Integer.parseInt(numColonna.getText()));
@@ -210,6 +248,7 @@ public class BattagliaNavale {
 
 				frmBattagliaNavale.setVisible(false);
 				frameInizializza.frmInizializzaPartita.setVisible(true);
+				
 				frameInizializza.frmInizializzaPartita.setBounds(350, 150, 450, 200);
 			}
 		});

@@ -1,3 +1,7 @@
+/**La seguente classe si occupa della connessione al database mysql e mette a disposizione la possibilità di richiamare query per le classi di questo package.
+ * 
+ * 
+ */
 package database;
 
 import java.sql.Connection;

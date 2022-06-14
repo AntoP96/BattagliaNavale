@@ -1,3 +1,10 @@
+/**Questa classe presenta una JFrame che permette l'inizalizzazione della partita da parte dell'Amministratore. Sulle JTextField presenti è
+ * stato aggiunto un oggetto DocumentListener per non permettere l'inserimento di input non validi e quindi il JButton di conferma si abilita
+ * solo quando i dati da inserire necessariamente sono presenti. In seguito alla pressione del JButton la classe crea una griglia di pannelli
+ *  su PanelMenu che rappresenta il campo da gioco. Questa classe ha anche il compito di modellare gli esiti delle mosse e quindi colora i JPanel
+ *  creati in base al colore del Segnaposto del Giocatore e aggiunge su di essi un'icona che mostra l'esito della mossa.
+ * 
+ */
 package boundary;
 
 import java.awt.Color;
@@ -27,26 +34,82 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public class InizializzaPartita implements DocumentListener {
-
-	static JFrame frmInizializzaPartita;
-	static JPanel contentPane;
+	/**frmInizializzaPartita: JFrame che contiene il JPanel per il form da mostrare all'Amministratore
+	 * 
+	 */
+	public JFrame frmInizializzaPartita;
+	/**contentPane: JPanel contenuto nella JFrame che a sua volta contiene panelInizializza.
+	 * 
+	 */
+	public JPanel contentPane;
+	/**panelInizalizza: JPanel che contiene le textField e il button per permettere all'Amministratore di inserire i dati.
+	 * 
+	 */
+	public JPanel panelInizializza;
+	/** txtGiocatore1: JTextField su cui viene immesso il nome del primo giocatore.
+	 * 
+	 */
 	private JTextField txtGiocatore1;
+	/**txtGiocatore2: JTextField su cui viene immesso il nome del secondo giocatore.
+	 * 
+	 */
 	private JTextField txtGiocatore2;
+	/**txtGiocatore3: JTextField su cui viene immesso il nome del terzo giocatore.
+	 * 
+	 */
 	private JTextField txtGiocatore3;
+	/**txtNumTentativiMax: JTextField su cui viene immesso il numero di tentativi massimo previsto per questa partita.
+	 * 
+	 */
 	private JTextField txtNumTentativiMax;
+	/**txtNumRighe: JTextField su cui viene immesso il numero di righe della griglia.
+	 * 
+	 */
 	private JTextField txtNumRighe;
+	/**txtNumColonne: JTextField su cui viene immesso il numero di colonne della griglia.
+	 * 
+	 */
 	private JTextField txtNumColonne;
+	/**txtRigaBersaglio: JTextField su cui viene immesso il numero di riga dove posizionare il bersaglio.
+	 * 
+	 */
 	private JTextField txtRigaBersaglio;
+	/**txtColonnaBersaglio: JTextField su cui viene immesso il numero di colonna dove posizionare il bersaglio.
+	 * 
+	 */
 	private JTextField txtColonnaBersaglio;
+	/**confermaInserimento: JButton per confermare l'inserimento dei dati nelle textField e quindi creare una nuova partita.
+	 * 
+	 */
 	private JButton confermaInserimento;
+	/**textFields: lista delle JTextField su cui viene aggiunto il DocumentListener per permettere l'abilitazione del JButton confermaInserimento.
+	 * 
+	 */
 	private ArrayList<JTextField> textFields = new ArrayList<>();
-	private ArrayList<JPanel> listaButton;
-	static JPanel panelInizializza;
+	/**listaPanel: lista dei riferimenti di JPanel aggiunti sul PanelMenu di BattagliaNavale per modellare il campo da gioco.
+	 * 
+	 */
+	private ArrayList<JPanel> listaPanel;
+	/**scoppio: ImageIcon raffigurante un'esplosione: indica che il segnaposto ha raggiunto il bersaglio
+	 * 
+	 */
 	private ImageIcon scoppio;
+	/**labelScoppio: JLabel che incapsula l'ImageIcon per essere mostrata sul JPanel. 
+	 * 
+	 */
 	private JLabel labelScoppio;
+	/**mancato: ImageIcon raffigurante delle onde: indica che il segnaposto non ha colpito il bersaglio.
+	 * 
+	 */
 	private ImageIcon mancato;
+	/**labelMancato: JLabel che incapsula l'ImageIcon  per essere mostrata sul JPanel.
+	 * 
+	 */
 	private JLabel labelMancato;
-
+	
+	/**gestore: istanza della classe GestorePartite utilizzata per gestire la logica del gioco.
+	 * 
+	 */
 	static GestorePartite gestore = new GestorePartite();
 
 	/**
@@ -71,28 +134,33 @@ public class InizializzaPartita implements DocumentListener {
 	public InizializzaPartita() {
 		initialize();
 	}
+	/**Metodo che permette la creazione di una nuova partita solo quando gli input inseriti sono validi. Presenta uno switch che in base al valore
+	 * di controllo ricevuto dal metodo checkInputFields() di questa classe, reagisce con un'azione diversa(crea la partita o chiede di reinserire i dati in 
+	 * base all'errore ricevuto.
+	 * SWITCH CASE PER ERRORI:
+	 * 0: input validi, creazione partita: si aggiunge sul PanelGriglia di BattagliaNavale una griglia di JPanel per modellare il campo da gioco.
+	 * 1: Errore sul nome dei giocatori: Non è possibile inserire due giocatori con lo stesso nome!
+	 * 2: Errore sulle dimensioni della griglia: La griglia deve essere quadrata!
+	 * 3: Errore sulla posizione del bersaglio: Il bersaglio deve essere contenuto nella griglia
+	 * 4: Errore sul numero dei tentativi massimo inserito: Il numero deve essere un multiplo del numero di giocatori
+	 * 5: Errore sul formato degli input inseriti dall'Amministratore.
+	*/
 	
-	public void startPartita () {
-		listaButton = new ArrayList<>();
+	public void inizializzaPartita () {
+		listaPanel = new ArrayList<>();
 		int righe = 0, colonne = 0;
 		ArrayList<String> listaGiocatori = new ArrayList<>();
 		String giocatore1;
 		String giocatore2 = "";
 		String giocatore3 = "";
-		int numTentativiMax;
-		int rigaBersaglio;
-		int colonnaBersaglio;
-
+		int numTentativiMax=0;
+		int rigaBersaglio=0;
+		int colonnaBersaglio=0;
+		
 		giocatore1 = txtGiocatore1.getText();
 		int i = checkInputFields();
-		/*SWITCH CASE PER ERRORI:
-		 * 0: input validi, creazione partita
-		 * 1: Errore sul nome dei giocatori: Non è possibile inserire due giocatori con lo stesso nome!
-		 * 2: Errore sulle dimensioni della griglia: La griglia deve essere quadrata!
-		 * 3: Errore sulla posizione del bersaglio: Il bersaglio deve essere contenuto nella griglia
-		 * 4: Errore sul numero dei tentativi massimo inserito: Il numero deve essere un multiplo del numero di giocatori
-		 * 5: Errore sul formato degli input inseriti dall'Amministratore.
-		*/
+		
+		
 		switch (i) {
 		case 0:
 			if (!txtGiocatore2.getText().isEmpty()) {
@@ -124,7 +192,7 @@ public class InizializzaPartita implements DocumentListener {
 					grid[x][y].setBorder(new LineBorder(Color.black));
 					b.panelGriglia.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 					b.panelGriglia.add(grid[x][y]);
-					listaButton.add(grid[x][y]);
+					listaPanel.add(grid[x][y]);
 					
 				}
 			}
@@ -135,7 +203,8 @@ public class InizializzaPartita implements DocumentListener {
 			txtGiocatore2.setText("");
 			txtGiocatore3.setText("");
 			gestore.inizializzaPartita(listaGiocatori, numTentativiMax, righe, colonne, rigaBersaglio-1,
-					colonnaBersaglio-1);
+					colonnaBersaglio-1,gestore.getIdPartitaDaCreare());
+			
 			b.aggiornaListaGiocatori(gestore.restituisciNomeGiocatori());
 			b.gestisciPartita();
 			break;
@@ -166,27 +235,49 @@ public class InizializzaPartita implements DocumentListener {
 			break;
 		}
 	}
-	
+	/**Aggiunge l'icona scoppio dal JPanel selezionato con riga e colonna
+	 * 
+	 * @param numRiga: numero di riga del JPanel (inserito dal Giocatore)
+	 * @param numColonna: numero di colonna del JPanel (inserito dal Giocatore)
+	 */
 	public void aggiungiScoppio(int numRiga, int numColonna) {
-		listaButton.get(numRiga*((int)Math.sqrt(listaButton.size()))+(numColonna-1)).add(labelScoppio);
+		listaPanel.get(numRiga*((int)Math.sqrt(listaPanel.size()))+(numColonna-1)).add(labelScoppio);
 	}
-	
+	/**Aggiunge l'icona mancato dal JPanel selezionato con riga e colonna
+	 * 
+	 * @param numRiga: numero di riga del JPanel (inserito dal Giocatore)
+	 * @param numColonna: numero di colonna del JPanel (inserito dal Giocatore)
+	 */
 	public void aggiungiMancato(int numRiga, int numColonna) {
-		listaButton.get(numRiga*((int)Math.sqrt(listaButton.size()))+(numColonna-1)).add(labelMancato);
+		listaPanel.get(numRiga*((int)Math.sqrt(listaPanel.size()))+(numColonna-1)).add(labelMancato);
 	}
-	
+	/**Rimuove l'icona mancato dal JPanel selezionato con riga e colonna
+	 * 
+	 * @param numRiga: numero di riga del JPanel (inserito dal Giocatore)
+	 * @param numColonna: numero di colonna del JPanel (inserito dal Giocatore)
+	 */
 	public void rimuoviMancato(int numRiga, int numColonna) {
-		listaButton.get(numRiga*((int)Math.sqrt(listaButton.size()))+(numColonna-1)).remove(labelMancato);
+		listaPanel.get(numRiga*((int)Math.sqrt(listaPanel.size()))+(numColonna-1)).remove(labelMancato);
 	}
-	
+	/**Metodo che aggiunge una textField all'attributo textFields di questa classe e aggiunge inoltre un DocumentListener ad ogni textField.
+	 * 
+	 * @param textField: textfield da aggiungere e su cui inserire il DocumentListener.
+	 */
 	public void addTextField(JTextField textField) {
 		textFields.add(textField);
 		textField.getDocument().addDocumentListener(this);
 	}
+	/**Metodo per svuotare le jTextField del testo inserito.
+	 * 
+	 */
 	public void clearTextFields() {
 		for(JTextField textField: textFields)
 			textField.setText("");
 	}
+	/**Metodo che controlla se le textField sono vuote.
+	 * 
+	 * @return: true se non vuota, false altrimenti.
+	 */
 	public boolean isDataEntered() {
 		for (JTextField textField : textFields) {
 			if (textField.getText().trim().length() == 0)
@@ -194,7 +285,9 @@ public class InizializzaPartita implements DocumentListener {
 		}
 		return true;
 	}
-
+	/**Metodi ereditati dall'interfaccia DocumentListener
+	 * 
+	 */
 	@Override
 	public void insertUpdate(DocumentEvent e) {
 		checkData();
@@ -208,14 +301,28 @@ public class InizializzaPartita implements DocumentListener {
 	@Override
 	public void changedUpdate(DocumentEvent e) {
 	}
-
+	/**Metodo richiamato ognivolta che il Giocatore inserisce o rimuove il testo dalle textField presenti nell'attributo textFields
+	 * Attiva il JButton confermaInserimento se le textField sono piene.
+	 */
 	private void checkData() {
 		confermaInserimento.setEnabled(isDataEntered());
 	}
-	public void coloraBottoni(int numRiga, int numColonna, Color color) {
-		listaButton.get(numRiga * ((int) Math.sqrt(listaButton.size())) + (numColonna - 1)).setBackground(color);
+	/**Metodo per colorare il JPanel corrispondente al numero di riga e colonna inserito dal Giocatore
+	 * 
+	 * @param numRiga: numero di riga inserito dal Giocatore
+	 * @param numColonna: numero di colonna inserito dal Giocatore.
+	 * @param color: colore associato al Giocatore tramite l'istanza della classe EntityGiocatoreColor
+	 */
+	public void coloraPanel(int numRiga, int numColonna, Color color) {
+		listaPanel.get(numRiga * ((int) Math.sqrt(listaPanel.size())) + (numColonna - 1)).setBackground(color);
 	}
-	
+	/**Metodo utilizzato per il controllo delle textField inserite dall'Amministratore
+	 * In particolare controlla che la griglia abbia una sola cifra per la dimensione di riga e di colonna
+	 * Idem per il bersaglio visto che deve essere posizionato sulla griglia
+	 * Controlla che i giocatori non abbiano nomi uguali e che numTentativiMax sia un numero.
+	 * 
+	 * @return: Restituisce un valore intero di controllo, interpretato poi dal metodo inizializzaPartita().
+	 */
 	public int checkInputFields() {
 		
 		int righe = 0, colonne = 0, numGiocatori = 1, numTentativiMax, rigaBersaglio, colonnaBersaglio;
@@ -333,13 +440,15 @@ public class InizializzaPartita implements DocumentListener {
 		confermaInserimento.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				startPartita();
+				if(e.getKeyCode()==KeyEvent.VK_ENTER) {
+					inizializzaPartita();
+				}
 			}
 		});
 		confermaInserimento.setEnabled(false);
 		confermaInserimento.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-				startPartita();
+				inizializzaPartita();
 		}
 		});
 		confermaInserimento.setBounds(291, 134, 135, 21);

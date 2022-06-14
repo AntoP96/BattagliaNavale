@@ -1,10 +1,22 @@
+/**Classe che estende la classe EntityGiocatore aggiungendo l'attributo color usato per modellare il segnaposto sulla JFrame BattagliaNavale. 
+ * Il costruttore di questa classe viene richiamato da GestorePartite ogni volta che viene creata una nuova partita e assegna randomicamente un 
+ * colore ad ogni giocatore in gara.
+ * 
+ */
 package entity;
 
 import java.awt.Color;
 
 public class EntityGiocatoreColor extends EntityGiocatore {
+	/**color: attributo di tipo Color assegnato randomicamente ad ogni Giocatore in gara per modellare graficamente il segnaposto.
+	 * 
+	 */
 	private Color color;
-
+	/**Costruttore della classe EntityGiocatoreColor, crea un nuovo Giocatore assegnandogli un colore.
+	 * 
+	 * @param nome : nome del Giocatore, fornito in input dall'Amministratore.
+	 * @param selection : intero che gestisce lo switch case, passato in input come numero random tra 1 e 10 dalla classe GestorePartite.
+	 */
 	public EntityGiocatoreColor(String nome, int selection) {
 		super(nome);
 		switch (selection) {
@@ -40,6 +52,10 @@ public class EntityGiocatoreColor extends EntityGiocatore {
 			break;
 		}
 	}
+	/**Metodo get per l'attributo color
+	 * 
+	 * @return: il colore associato all'istanza di EntityGiocatoreColor su cui viene invocato il metodo.
+	 */
 
 	public Color getColor() {
 		return this.color;
